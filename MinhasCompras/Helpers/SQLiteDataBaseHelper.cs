@@ -4,7 +4,7 @@ using SQLite;
 
 namespace MinhasCompras.Helpers
 {
-    internal class SQLiteDataBaseHelper
+    public class SQLiteDataBaseHelper
     {
         readonly SQLiteAsyncConnection _conn;
 
