@@ -1,11 +1,26 @@
+using MinhasCompras.Models;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+
 namespace MinhasCompras.Views;
 
 public partial class ListaProduto : ContentPage
 {
+	ObservableCollection<Produto> lista = new ObservableCollection<Produto>();
 	public ListaProduto()
 	{
 		InitializeComponent();
-	}
+
+		lst_produtos.ItemsSource = lista;
+    }
+
+    protected async override void OnAppearing()
+    {
+        List<Produto> tmp = await App.Db.GetAll();
+
+		lista.Clear();
+        tmp.ForEach(i => lista.Add(i));
+    }
 
     private void ToolbarItem_Clicked(object sender, EventArgs e)
     {
@@ -16,5 +31,39 @@ public partial class ListaProduto : ContentPage
 		{
 			DisplayAlert("Ops", ex.Message, "OK");
 		}
+    }
+
+    private async void txt_search_TextChanged(object sender, TextChangedEventArgs e)
+    {
+		string q = e.NewTextValue;
+
+		lista.Clear();
+
+        List<Produto> tmp = await App.Db.Search(q);
+		
+		tmp.ForEach(i => lista.Add(i));
+    }
+
+    private void ToolbarItem_Clicked_1(object sender, EventArgs e)
+    {
+		double soma = lista.Sum(i => i.Total);
+
+		string msg = $"O total é {soma:C}";
+
+		DisplayAlert("Total dos Produtos", msg, "OK");
+    }
+
+    private async void MenuItem_Clicked(object sender, EventArgs e)
+    {
+		var menuItem = (MenuItem)sender;
+		var produto = (Produto)menuItem.BindingContext;
+
+		bool confirm = await DisplayAlert("Confirmação", $"Deseja remover {produto.Descricao}?", "Sim", "Não");
+
+		if (confirm)
+		{
+			await App.Db.Delete(produto.Id);
+			lista.Remove(produto);
+        }
     }
 }
