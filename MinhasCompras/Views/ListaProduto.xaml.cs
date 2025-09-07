@@ -18,9 +18,10 @@ public partial class ListaProduto : ContentPage
     {
 		try
 		{
-			List<Produto> tmp = await App.Db.GetAll();
+            lista.Clear();
 
-			lista.Clear();
+            List<Produto> tmp = await App.Db.GetAll();
+
 			tmp.ForEach(i => lista.Add(i));
 		}
         catch (Exception ex)
