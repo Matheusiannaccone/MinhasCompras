@@ -23,6 +23,11 @@ public partial class ListaProduto : ContentPage
             List<Produto> tmp = await App.Db.GetAll();
 
             tmp.ForEach(i => lista.Add(i));
+
+            var categorias = tmp.Select(p => p.Categoria).Distinct().ToList();
+            categorias.Insert(0, "Todas");
+            picker_categoria.ItemsSource = categorias;
+            picker_categoria.SelectedIndex = 0;
         }
         catch (Exception ex)
         {
@@ -72,7 +77,19 @@ public partial class ListaProduto : ContentPage
         {
             double soma = lista.Sum(i => i.Total);
 
-            string msg = $"O total é {soma:C}";
+            var totalCategoria = lista
+                .GroupBy(p => p.Categoria)
+                .Select(g => new
+                {
+                    Categoria = g.Key,
+                    Total = g.Sum(p => p.Total)
+                });
+
+            string msg = $"O total geral é: {soma:C}\n\nTotal por categoria\n";
+            foreach (var t in totalCategoria)
+            {
+                msg += $"{t.Categoria}: {t.Total:C}\n";
+            }
 
             DisplayAlert("Total dos Produtos", msg, "OK");
         }
@@ -137,6 +154,33 @@ public partial class ListaProduto : ContentPage
         finally
         {
             lst_produtos.IsRefreshing = false;
+        }
+    }
+
+    private async void picker_categoria_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            string categoriaSelecionada = picker_categoria.SelectedItem?.ToString();
+
+            lista.Clear();
+
+            List<Produto> tmp;
+
+            if (categoriaSelecionada == "Todas" || string.IsNullOrWhiteSpace(categoriaSelecionada))
+            {
+                tmp = await App.Db.GetAll();
+            }
+            else
+            {
+                tmp = await App.Db.SearchByCategoria(categoriaSelecionada);
+            }
+
+            tmp.ForEach(i => lista.Add(i));
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Ops", ex.Message, "OK");
         }
     }
 }
