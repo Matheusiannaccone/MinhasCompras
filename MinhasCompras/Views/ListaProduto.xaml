@@ -18,7 +18,7 @@
     </ContentPage.Resources>
 
     <StackLayout>
-        <Grid ColumnDefinitions="350, 100">
+        <Grid ColumnDefinitions="300, 150">
             <SearchBar x:Name="txt_search"
                    Margin="10, 0, 0, 0"
                    Placeholder="Busca de produtos"
